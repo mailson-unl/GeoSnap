@@ -1,0 +1,6 @@
+streamlit
+pillow
+folium
+pyshp
+simplekml
+pandas
