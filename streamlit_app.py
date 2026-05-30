@@ -219,56 +219,41 @@ if st.session_state.map_html:
 # Export options
 if st.session_state.coordinates:
     st.subheader("Export Coordinates")
-    
-    export_formats = st.multiselect(
-        "Select export format(s):",
-        options=["CSV", "KML", "Shapefile (ZIP)"],
-        default=["CSV", "KML"]
-    )
 
-    if st.button("Download Selected Formats", key="download_button"):
-        if not export_formats:
-            st.warning("Please select at least one format to download.")
-        else:
-            # Create a zip file in memory if multiple formats or Shapefile is selected
-            if len(export_formats) > 1 or "Shapefile (ZIP)" in export_formats:
-                zip_buffer = io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                    if "CSV" in export_formats:
-                        csv_bytes = save_to_csv_bytes(st.session_state.coordinates)
-                        zip_file.writestr("coordinates.csv", csv_bytes)
-                    if "KML" in export_formats:
-                        kml_bytes = save_to_kml_bytes(st.session_state.coordinates)
-                        zip_file.writestr("coordinates.kml", kml_bytes)
-                    if "Shapefile (ZIP)" in export_formats:
-                        shp_files = save_to_shapefile_bytes(st.session_state.coordinates)
-                        zip_file.writestr("coordinates.shp", shp_files["shp"])
-                        zip_file.writestr("coordinates.shx", shp_files["shx"])
-                        zip_file.writestr("coordinates.dbf", shp_files["dbf"])
-                        zip_file.writestr("coordinates.prj", shp_files["prj"])
-                
-                st.download_button(
-                    label="Download All as ZIP",
-                    data=zip_buffer.getvalue(),
-                    file_name="geosnap_coordinates.zip",
-                    mime="application/zip"
-                )
-            elif "CSV" in export_formats: # Single CSV
-                 csv_bytes = save_to_csv_bytes(st.session_state.coordinates)
-                 st.download_button(
-                    label="Download CSV",
-                    data=csv_bytes,
-                    file_name="coordinates.csv",
-                    mime="text/csv"
-                )
-            elif "KML" in export_formats: # Single KML
-                kml_bytes = save_to_kml_bytes(st.session_state.coordinates)
-                st.download_button(
-                    label="Download KML",
-                    data=kml_bytes,
-                    file_name="coordinates.kml",
-                    mime="application/vnd.google-earth.kml+xml"
-                )
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        csv_bytes = save_to_csv_bytes(st.session_state.coordinates)
+        st.download_button(
+            label="Download CSV",
+            data=csv_bytes,
+            file_name="coordinates.csv",
+            mime="text/csv"
+        )
+
+    with col2:
+        kml_bytes = save_to_kml_bytes(st.session_state.coordinates)
+        st.download_button(
+            label="Download KML",
+            data=kml_bytes,
+            file_name="coordinates.kml",
+            mime="application/vnd.google-earth.kml+xml"
+        )
+
+    with col3:
+        shp_files = save_to_shapefile_bytes(st.session_state.coordinates)
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            zip_file.writestr("coordinates.shp", shp_files["shp"])
+            zip_file.writestr("coordinates.shx", shp_files["shx"])
+            zip_file.writestr("coordinates.dbf", shp_files["dbf"])
+            zip_file.writestr("coordinates.prj", shp_files["prj"])
+        st.download_button(
+            label="Download Shapefile (ZIP)",
+            data=zip_buffer.getvalue(),
+            file_name="coordinates_shapefile.zip",
+            mime="application/zip"
+        )
 
 
 st.markdown("---")
